@@ -16,10 +16,27 @@
    - output JSONL path
    - output folder path
    - concurrency (default 5)
+3. Optional runtime overrides via environment variables:
+
+- `CSV_FILE_PATH`
+- `OUTPUT_JSONL_PATH`
+- `OUTPUT_FOLDER_PATH`
+- `CONCURRENCY`
+- `JSON_SCHEMA_PATH`
 
 ## Run
 
 ```bash
+node scripts/node/crawl_ncbi_bacteria.js
+```
+
+Example (small dry run):
+
+```bash
+CSV_FILE_PATH=data/interim/test_run/sample_bacteria.csv \
+OUTPUT_JSONL_PATH=results/test_run_summary.jsonl \
+OUTPUT_FOLDER_PATH=data/interim/test_run/output \
+CONCURRENCY=2 \
 node scripts/node/crawl_ncbi_bacteria.js
 ```
 
@@ -30,6 +47,7 @@ node scripts/node/crawl_ncbi_bacteria.js
 - `latest_assembly_versions/` is checked per row before folder creation.
 - Downloads preserve remote hierarchy under each bacteria folder (no extra `latest_assembly_versions` local layer).
 - One JSONL summary row is written per input row including `download_completed`.
+- JSONL output is validated against `contracts/jsonl-summary.schema.json` before write.
 
 ## Rerun/Reconciliation
 

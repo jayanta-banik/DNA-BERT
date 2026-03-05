@@ -11,11 +11,11 @@
 
 **Purpose**: Preflight, configuration constants, and scaffolding for crawler modules.
 
-- [ ] T001 Complete preflight and entrypoint inventory for crawler in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T002 Define runtime constants (CSV path, output folder, JSONL path, concurrency default=5) in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T003 [P] Create URL/path helper utilities for normalization and safe local path mapping in util/node/path_utils.js
-- [ ] T004 [P] Create JSONL read/write helper utilities in util/node/jsonl_store.js
-- [ ] T005 [P] Create HTML index parsing helpers (ignore Parent Directory) in util/node/index_parser.js
+- [x] T001 Complete preflight and entrypoint inventory for crawler in scripts/node/crawl_ncbi_bacteria.js
+- [x] T002 Define runtime constants (CSV path, output folder, JSONL path, concurrency default=5) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T003 [P] Create URL/path helper utilities for normalization and safe local path mapping in util/node/path_utils.js
+- [x] T004 [P] Create JSONL read/write helper utilities in util/node/jsonl_store.js
+- [x] T005 [P] Create HTML index parsing helpers (ignore Parent Directory) in util/node/index_parser.js
 
 ---
 
@@ -25,11 +25,11 @@
 
 **CRITICAL**: No user story implementation starts until this phase is complete.
 
-- [ ] T006 Implement fail-fast CSV ingestion and row validation (`bacteria_name`,`url`, UTF-8 assumptions) in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T007 Implement summary row builder with snake_case keys and required FR-011 fields in util/node/jsonl_store.js
-- [ ] T008 Implement completion-aware reconciliation loader keyed by (`bacteria_name`,`source_url`) in util/node/jsonl_store.js
-- [ ] T009 Implement local output consistency check for `download_completed=true` reuse decisions in util/node/path_utils.js
-- [ ] T010 Wire foundational helpers into main crawler startup flow in scripts/node/crawl_ncbi_bacteria.js
+- [x] T006 Implement fail-fast CSV ingestion and row validation (`bacteria_name`,`url`, UTF-8 assumptions) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T007 Implement summary row builder with snake_case keys and required FR-011 fields in util/node/jsonl_store.js
+- [x] T008 Implement completion-aware reconciliation loader keyed by (`bacteria_name`,`source_url`) in util/node/jsonl_store.js
+- [x] T009 Implement local output consistency check for `download_completed=true` reuse decisions in util/node/path_utils.js
+- [x] T010 Wire foundational helpers into main crawler startup flow in scripts/node/crawl_ncbi_bacteria.js
 
 **Checkpoint**: Foundation complete. User story work can proceed.
 
@@ -43,13 +43,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement target URL derivation for `latest_assembly_versions/` in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T012 [US1] Implement existence check for target listing before folder creation in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T013 [US1] Implement version discovery parser (labels + URLs) using util/node/index_parser.js in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T014 [US1] Implement recursive crawl traversal that excludes `Parent Directory` links in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T015 [US1] Implement download flow preserving remote hierarchy under per-bacteria folder without extra `latest_assembly_versions` layer in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T016 [US1] Ensure unavailable targets are marked as skipped and do not create bacteria folders in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T017 [US1] Add per-row error isolation so failed rows do not halt remaining rows in scripts/node/crawl_ncbi_bacteria.js
+- [x] T011 [US1] Implement target URL derivation for `latest_assembly_versions/` in scripts/node/crawl_ncbi_bacteria.js
+- [x] T012 [US1] Implement existence check for target listing before folder creation in scripts/node/crawl_ncbi_bacteria.js
+- [x] T013 [US1] Implement version discovery parser (labels + URLs) using util/node/index_parser.js in scripts/node/crawl_ncbi_bacteria.js
+- [x] T014 [US1] Implement recursive crawl traversal that excludes `Parent Directory` links in scripts/node/crawl_ncbi_bacteria.js
+- [x] T015 [US1] Implement download flow preserving remote hierarchy under per-bacteria folder without extra `latest_assembly_versions` layer in scripts/node/crawl_ncbi_bacteria.js
+- [x] T016 [US1] Ensure unavailable targets are marked as skipped and do not create bacteria folders in scripts/node/crawl_ncbi_bacteria.js
+- [x] T017 [US1] Add per-row error isolation so failed rows do not halt remaining rows in scripts/node/crawl_ncbi_bacteria.js
 
 **Checkpoint**: User Story 1 is independently functional.
 
@@ -63,11 +63,11 @@
 
 ### Implementation for User Story 2
 
-- [ ] T018 [US2] Populate summary fields (`bacteria_name`,`source_url`,`latest_assembly_versions_available`,`discovered_version_count`,`downloaded_file_count`,`download_completed`) in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T019 [US2] Populate minimal `versions` objects (`version_url`,`version_label`) in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T020 [US2] Set status transitions (`success`,`failed`,`skipped`) and conditional `error_message` handling in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T021 [US2] Append exactly one JSONL record per input row in processing order using util/node/jsonl_store.js from scripts/node/crawl_ncbi_bacteria.js
-- [ ] T022 [US2] Validate JSONL output against contracts/jsonl-summary.schema.json in scripts/node/crawl_ncbi_bacteria.js
+- [x] T018 [US2] Populate summary fields (`bacteria_name`,`source_url`,`latest_assembly_versions_available`,`discovered_version_count`,`downloaded_file_count`,`download_completed`) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T019 [US2] Populate minimal `versions` objects (`version_url`,`version_label`) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T020 [US2] Set status transitions (`success`,`failed`,`skipped`) and conditional `error_message` handling in scripts/node/crawl_ncbi_bacteria.js
+- [x] T021 [US2] Append exactly one JSONL record per input row in processing order using util/node/jsonl_store.js from scripts/node/crawl_ncbi_bacteria.js
+- [x] T022 [US2] Validate JSONL output against contracts/jsonl-summary.schema.json in scripts/node/crawl_ncbi_bacteria.js
 
 **Checkpoint**: User Stories 1 and 2 are independently functional.
 
@@ -81,11 +81,11 @@
 
 ### Implementation for User Story 3
 
-- [ ] T023 [US3] Implement reconciliation match by (`bacteria_name`,`source_url`) against prior JSONL in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T024 [US3] Implement skip path for rows with `download_completed=true` and consistent output in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T025 [US3] Implement cleanup path for rows with `download_completed=false` or missing/inconsistent output in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T026 [US3] Remove stale prior JSONL entries for rows chosen for reprocessing in util/node/jsonl_store.js
-- [ ] T027 [US3] Ensure reconciliation-skipped rows also emit current-run JSONL records (one record per input row invariant) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T023 [US3] Implement reconciliation match by (`bacteria_name`,`source_url`) against prior JSONL in scripts/node/crawl_ncbi_bacteria.js
+- [x] T024 [US3] Implement skip path for rows with `download_completed=true` and consistent output in scripts/node/crawl_ncbi_bacteria.js
+- [x] T025 [US3] Implement cleanup path for rows with `download_completed=false` or missing/inconsistent output in scripts/node/crawl_ncbi_bacteria.js
+- [x] T026 [US3] Remove stale prior JSONL entries for rows chosen for reprocessing in util/node/jsonl_store.js
+- [x] T027 [US3] Ensure reconciliation-skipped rows also emit current-run JSONL records (one record per input row invariant) in scripts/node/crawl_ncbi_bacteria.js
 
 **Checkpoint**: All user stories are independently functional.
 
@@ -95,10 +95,11 @@
 
 **Purpose**: Final hardening, documentation, and operational checks.
 
-- [ ] T028 Implement CLI progress updates for per-task completion with immediate slot refill (no batch bottleneck) in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T029 [P] Add structured console logging for row start/finish/failure with row identifiers in scripts/node/crawl_ncbi_bacteria.js
-- [ ] T030 [P] Update run and configuration notes for final behavior in specs/001-ncbi-bacteria-crawler/quickstart.md
+- [x] T028 Implement CLI progress updates for per-task completion with immediate slot refill (no batch bottleneck) in scripts/node/crawl_ncbi_bacteria.js
+- [x] T029 [P] Add structured console logging for row start/finish/failure with row identifiers in scripts/node/crawl_ncbi_bacteria.js
+- [x] T030 [P] Update run and configuration notes for final behavior in specs/001-ncbi-bacteria-crawler/quickstart.md
 - [ ] T031 Run end-to-end dry run with representative CSV and verify SC-001..SC-004 outcomes in scripts/node/crawl_ncbi_bacteria.js
+      Note: Representative run executed on 20 rows. SC-001 passed (20/20 summary rows), SC-004 observed elapsed 8.20s on rerun command, SC-002 and SC-003 not fully verifiable in this environment due upstream 403/503 responses and zero available rows.
 
 ---
 
