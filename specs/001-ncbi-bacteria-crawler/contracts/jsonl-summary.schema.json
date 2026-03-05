@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dna-bert/specs/001-ncbi-bacteria-crawler/contracts/jsonl-summary.schema.json",
+  "title": "Crawl Summary Row",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bacteria_name",
+    "source_url",
+    "latest_assembly_versions_available",
+    "discovered_version_count",
+    "downloaded_file_count",
+    "download_completed",
+    "versions",
+    "status"
+  ],
+  "properties": {
+    "bacteria_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url": {
+      "type": "string",
+      "minLength": 1,
+      "format": "uri"
+    },
+    "latest_assembly_versions_available": {
+      "type": "boolean"
+    },
+    "discovered_version_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "downloaded_file_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "download_completed": {
+      "type": "boolean"
+    },
+    "versions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["version_url", "version_label"],
+        "properties": {
+          "version_url": {
+            "type": "string",
+            "minLength": 1,
+            "format": "uri"
+          },
+          "version_label": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "failed", "skipped"]
+    },
+    "error_message": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "const": "failed" } }
+      },
+      "then": {
+        "required": ["error_message"]
+      }
+    }
+  ]
+}
