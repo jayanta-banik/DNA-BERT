@@ -1,0 +1,17 @@
+{
+  "type": "module",
+  "imports": {
+    "#scripts/*": "./scripts/node/*.js",
+    "#data/*": "./data/*",
+    "#util/*": "./util/node/*.js"
+  },
+  "dependencies": {
+    "add": "^2.0.6",
+    "cheerio": "^1.2.0",
+    "cli-progress": "^3.12.0",
+    "cliprogress": "^0.0.2",
+    "got": "^14.6.6",
+    "p-limit": "^7.3.0",
+    "yarn": "^1.22.22"
+  }
+}
