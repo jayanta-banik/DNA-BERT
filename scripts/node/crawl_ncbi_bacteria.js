@@ -1,10 +1,9 @@
+import { parseDirectoryLinks } from '#util/web_scrapper';
 import cliProgress from 'cli-progress';
 import got from 'got';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import pLimit from 'p-limit';
-
-import { parseDirectoryLinks } from '#util/index_parser';
 
 const INPUT_JSONL_PATH = 'results/ncbi_bacteria_directory.jsonl';
 const OUTPUT_JSONL_PATH = 'results/ncbi_bacteria_tree.jsonl';
