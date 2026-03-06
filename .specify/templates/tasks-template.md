@@ -49,6 +49,7 @@ description: "Task list template for feature implementation"
 
 - [ ] T000 Complete mandatory preflight (constitution, `.specify/memory/*`, entrypoint search, pattern inventory)
 - [ ] T000a Confirm naming and interface conventions for touched files (Python `snake_case`, Node.js `camelCase`, DataFrame/DB/file JSON `snake_case`, constants/enums `UPPER_SNAKE_CASE`, message JSON keys per runtime language)
+- [ ] T000b If notebooks are in scope, define the notebook skeleton (imports-first, constants-second, Run All-safe cell order)
 - [ ] T001 Create project structure per implementation plan
 - [ ] T002 Initialize [language] project with [framework] dependencies
 - [ ] T003 [P] Configure linting and formatting tools
@@ -158,6 +159,7 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX If notebooks are in scope, run a full notebook execution-order validation and remove any exploratory cells that break the final rerunnable flow
 
 ---
 
@@ -255,3 +257,6 @@ With multiple developers:
 - Use existing project patterns before introducing new approaches
 - Avoid relative imports unless explicitly required by local project constraints
 - For extensible JavaScript functions, prefer object-parameter signatures (for example, `fn({} = {})`)
+- For notebooks, keep imports in the first cell, shared constants in the second cell,
+  split logic into small cells, and ensure the final notebook supports Run All without
+  hidden state assumptions

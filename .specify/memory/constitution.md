@@ -1,20 +1,20 @@
 <!--
 Sync Impact Report
-- Version change: 1.3.0 -> 1.4.0
+- Version change: 1.4.0 -> 1.5.0
 - Modified principles:
-	- V. Security, Dependency Hygiene, and Mandatory Preflight ->
-	  V. Security, Dependency Hygiene, Mandatory Preflight, and Naming Discipline
+	- None
 - Added sections:
-	- Operational Constraints: Naming, JSON Key, Import, and Function Signature Rules
+	- Operational Constraints: Notebook Workflow Rules
 - Removed sections:
 	- None
 - Templates requiring updates:
 	- .specify/templates/plan-template.md: ✅ updated
 	- .specify/templates/spec-template.md: ✅ updated
 	- .specify/templates/tasks-template.md: ✅ updated
-	- .specify/templates/commands/*.md: ⚠ pending (directory not present)
+	- .specify/templates/commands/*.md: ⚠ not present (directory absent)
 - Runtime guidance checked:
 	- README.md: no governance references to update
+	- notebooks/readme.md: ✅ updated
 - Deferred TODOs:
 	- TODO(RATIFICATION_DATE): Set when approved by human maintainer
 -->
@@ -114,6 +114,31 @@ Boundary exception rule:
   agents MUST preserve the external contract at the boundary and map internally to the
   required naming convention for this repository.
 
+### Notebook Workflow Rules
+
+For Jupyter notebooks, all notebook imports MUST be in the first cell. If a notebook
+uses shared file paths, configuration values, or execution parameters, the second cell
+MUST define those values as global constants.
+
+Notebook work MUST be split into small, logically separated cells. When present, data
+loading cells MUST come after the imports and constants cells. Agents MUST NOT wrap an
+entire notebook in functions. Functions SHOULD be introduced only when reuse is likely
+or the logic is repetitive enough that top-level cells would become harder to read.
+
+Every notebook delivered or modified by an agent MUST support Run All in order without
+logical errors. Cell ordering MUST preserve a valid execution sequence, and notebook code
+MUST fail fast on invalid assumptions or missing prerequisites rather than silently
+continuing with incorrect state.
+
+Notebook work MUST be treated as iterative and exploratory. Adding new cells step-by-step
+and revising earlier cells is allowed and expected. When notebooks depend on existing
+functions, agents SHOULD preserve backward compatibility when feasible. Agents MUST
+distinguish between navigational exploration cells and objective code changes, because
+notebook workflows are intentionally less rigid than `.py` or `.js` implementation files
+while still needing a clean rerunnable final state.
+
+Use Markdown cells to clearly mark logical steps. Do NOT be too verbose at the same time add headings to colate steps together, misc steps dont need to be colated.
+
 When in doubt, agents MUST stop and ask a human.
 
 ## Workflow Compliance Requirements
@@ -156,4 +181,4 @@ Escalation triggers (agents MUST stop and ask a human):
 - Any need to change serverless/IAM/stage/environment/deployment behavior.
 - Any request that might expose PHI/PII or other protected genomic/health-linked data.
 
-**Version**: 1.4.0 | **Ratified**: TODO(RATIFICATION_DATE): Set when approved by human maintainer | **Last Amended**: 2026-03-04
+**Version**: 1.5.0 | **Ratified**: TODO(RATIFICATION_DATE): Set when approved by human maintainer | **Last Amended**: 2026-03-06

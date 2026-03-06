@@ -43,6 +43,12 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 - [ ] JSON message key casing follows runtime language conventions at boundaries
 - [ ] JS extensible functions use object-parameter signatures (for example, `fn({} = {})`)
 - [ ] Relative imports are avoided unless explicitly justified by project constraints
+- [ ] If notebooks are in scope, the first cell contains imports and the second cell
+      defines shared constants/parameters
+- [ ] If notebooks are in scope, cell order is Run All safe, work is split into small
+      logical cells, and invalid assumptions fail fast
+- [ ] If notebooks are in scope, functions are added only for reuse/repetition and the
+      final notebook preserves an exploratory but rerunnable workflow
 - [ ] `.specify/memory/*` reviewed (including `UI_BEHAVIOR_STANDARDS.md` and
       `LEARNINGS.md` when present)
 

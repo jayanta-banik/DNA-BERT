@@ -8,6 +8,9 @@
 ## Compliance Notes _(mandatory)_
 
 - **Relevant Constitution Principles**: [List principle IDs/titles applied]
+- **Notebook Workflow Constraints**: [If notebooks are in scope, describe how imports-first,
+  constants-second, small-cell structure, Run All safety, fail-fast checks, and exploratory
+  workflow expectations are satisfied; otherwise state N/A]
 - **UI Behavior Standards Applied**: [Summarize standards from `.specify/memory/UI_BEHAVIOR_STANDARDS.md` or state N/A if file absent]
 - **Cross-Feature Learnings Applied**: [Summarize learnings from `.specify/memory/LEARNINGS.md` and other memory files, or state N/A if absent]
 - **Conflicts & Resolution**: [List any conflicts with standards/learnings and the safest compliant alternative]
