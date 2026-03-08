@@ -1,124 +1,127 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: Protein Sequence EDA and Tokenization Strategy Evaluation for BERT Pretraining
 
-**Branch**: `[###-feature-name]` | **Date**: [DATE] | **Spec**: [link]
-**Input**: Feature specification from `/specs/[###-feature-name]/spec.md`
-
-**Note**: This template is filled in by the `/speckit.plan` command. See `.specify/templates/plan-template.md` for the execution workflow.
+**Branch**: `001-protein-eda-tokenization` | **Date**: 2026-03-08 | **Spec**: `/specs/001-protein-eda-tokenization/spec.md`
+**Input**: Feature specification from `/specs/001-protein-eda-tokenization/spec.md`
 
 ## Summary
 
-[Extract from feature spec: primary requirement + technical approach from research]
+Build a rerunnable notebook-first EDA workflow in `EDA.ipynb` that parses all current `protein.faa` files under the NCBI dehydrated dataset tree, preserves provenance and FASTA headers, compares single-token, overlapping 3-mer, overlapping 5-mer, and BPE tokenization strategies, saves CSV preview plus Parquet analysis artifacts, and ends with an evidence-based recommendation for pretraining setup.
 
 ## Technical Context
 
-<!--
-  ACTION REQUIRED: Replace the content in this section with the technical details
-  for the project. The structure here is presented in advisory capacity to guide
-  the iteration process.
--->
-
-**Language/Version**: [e.g., Python 3.11, Swift 5.9, Rust 1.75 or NEEDS CLARIFICATION]  
-**Primary Dependencies**: [e.g., FastAPI, UIKit, LLVM or NEEDS CLARIFICATION]  
-**Storage**: [if applicable, e.g., PostgreSQL, CoreData, files or N/A]  
-**Testing**: [e.g., pytest, XCTest, cargo test or NEEDS CLARIFICATION]  
-**Target Platform**: [e.g., Linux server, iOS 15+, WASM or NEEDS CLARIFICATION]
-**Project Type**: [e.g., library/cli/web-service/mobile-app/compiler/desktop-app or NEEDS CLARIFICATION]  
-**Performance Goals**: [domain-specific, e.g., 1000 req/s, 10k lines/sec, 60 fps or NEEDS CLARIFICATION]  
-**Constraints**: [domain-specific, e.g., <200ms p95, <100MB memory, offline-capable or NEEDS CLARIFICATION]  
-**Scale/Scope**: [domain-specific, e.g., 10k users, 1M LOC, 50 screens or NEEDS CLARIFICATION]
+**Language/Version**: Python in Jupyter notebook workflow using the existing `~/venv3` environment  
+**Primary Dependencies**: Python standard library, `pandas`, `matplotlib`, `numpy`, `pyarrow` for Parquet export, and a BPE tokenizer library suitable for notebook-side corpus fitting such as `sentencepiece`  
+**Storage**: Local filesystem (`data/raw/` FASTA corpus, `data/interim/` tabular outputs, `results/` figures/manifests)  
+**Testing**: Run All notebook validation, artifact existence/schema checks, and spot-check data assertions on parsed counts and output tables  
+**Target Platform**: Linux Jupyter environment with the existing `venv3` activated or available via `source ~/venv3/bin/activate`  
+**Project Type**: Exploratory notebook and file-backed data-analysis workflow  
+**Performance Goals**: Parse the current corpus (`22,141` `protein.faa` files) in a single rerunnable notebook workflow, compute corpus-wide descriptive statistics on the full dataset, and keep expensive tokenization comparisons explicitly scope-controlled and auditable  
+**Constraints**: Notebook imports first and shared constants second, Run All safe cell order, fail-fast config validation, no silent fallback, preserve raw FASTA/header provenance, save file-facing schemas in `snake_case`, and record scope overrides for expensive analyses  
+**Scale/Scope**: Current corpus spans `22,141` FASTA files with sequence count determined at runtime, full-corpus parsing is in scope, and tokenization comparison may mix full-corpus and explicitly overridden scopes depending on user-selected runtime configuration
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-- [ ] Semantic behavior preserved unless spec explicitly changes it
-- [ ] Source-of-truth behavior identified for domain logic; unknowns escalated
-- [ ] Diff is minimal and scoped; no drive-by refactors included
-- [ ] Migration is incremental with explicit checkpoints and runnable state
-- [ ] Existing project patterns are reused; no unnecessary architecture changes
-- [ ] Secrets handling and dependency hygiene requirements are satisfied
-- [ ] Mandatory preflight complete: target project, local rules, entrypoints, patterns
-- [ ] Naming and schema conventions enforced (Python `snake_case`, Node.js `camelCase`,
+- [x] Semantic behavior preserved unless spec explicitly changes it
+- [x] Source-of-truth behavior identified for domain logic; unknowns escalated
+- [x] Diff is minimal and scoped; no drive-by refactors included
+- [x] Migration is incremental with explicit checkpoints and runnable state
+- [x] Existing project patterns are reused; no unnecessary architecture changes
+- [x] Secrets handling and dependency hygiene requirements are satisfied
+- [x] Mandatory preflight complete: target project, local rules, entrypoints, patterns
+- [x] Naming and schema conventions enforced (Python `snake_case`, Node.js `camelCase`,
       DataFrame/DB/file JSON `snake_case`, constants/enums `UPPER_SNAKE_CASE`)
-- [ ] JSON message key casing follows runtime language conventions at boundaries
-- [ ] JS extensible functions use object-parameter signatures (for example, `fn({} = {})`)
-- [ ] Relative imports are avoided unless explicitly justified by project constraints
-- [ ] If notebooks are in scope, the first cell contains imports and the second cell
+- [x] JSON message key casing follows runtime language conventions at boundaries
+- [x] JS extensible functions use object-parameter signatures (for example, `fn({} = {})`)
+- [x] Relative imports are avoided unless explicitly justified by project constraints
+- [x] If notebooks are in scope, the first cell contains imports and the second cell
       defines shared constants/parameters
-- [ ] If notebooks are in scope, cell order is Run All safe, work is split into small
+- [x] If notebooks are in scope, cell order is Run All safe, work is split into small
       logical cells, and invalid assumptions fail fast
-- [ ] If notebooks are in scope, functions are added only for reuse/repetition and the
+- [x] If notebooks are in scope, functions are added only for reuse/repetition and the
       final notebook preserves an exploratory but rerunnable workflow
-- [ ] `.specify/memory/*` reviewed (including `UI_BEHAVIOR_STANDARDS.md` and
+- [x] `.specify/memory/*` reviewed (including `UI_BEHAVIOR_STANDARDS.md` and
       `LEARNINGS.md` when present)
+
+## Phase 0 Research Summary
+
+Research decisions are documented in `/specs/001-protein-eda-tokenization/research.md` and resolve notebook placement, FASTA/header parsing policy, BPE evaluation strategy, duplicate/residue handling, and output artifact conventions.
+
+## Phase 1 Design Summary
+
+- Data model defined in `/specs/001-protein-eda-tokenization/data-model.md`
+- Contracts defined in `/specs/001-protein-eda-tokenization/contracts/`
+- Execution runbook defined in `/specs/001-protein-eda-tokenization/quickstart.md`
+
+## Post-Design Constitution Re-Check
+
+- [x] Design remains notebook-first and scoped to phase-1 evidence gathering
+- [x] Persisted table/manifest keys remain `snake_case`
+- [x] Planned Python variables and constants follow repository naming rules
+- [x] New dependencies are limited to those needed for Parquet output and BPE comparison
+- [x] Notebook design preserves imports-first/config-second and Run All safety
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
-├── plan.md              # This file (/speckit.plan command output)
-├── research.md          # Phase 0 output (/speckit.plan command)
-├── data-model.md        # Phase 1 output (/speckit.plan command)
-├── quickstart.md        # Phase 1 output (/speckit.plan command)
-├── contracts/           # Phase 1 output (/speckit.plan command)
-└── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
+specs/001-protein-eda-tokenization/
+├── plan.md
+├── research.md
+├── data-model.md
+├── quickstart.md
+├── contracts/
+│   ├── analysis-artifact-manifest.schema.json
+│   └── eda-notebook-config.md
+└── tasks.md
 ```
 
 ### Source Code (repository root)
 
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
-
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
+EDA.ipynb
 
-tests/
-├── contract/
-├── integration/
-└── unit/
+data/
+├── raw/
+│   └── prot_only_dehydrated/
+│       └── ncbi_dataset/
+│           └── data/
+├── interim/
+│   └── protein_eda/
+│       ├── sequence_stats.parquet
+│       ├── sequence_stats_preview.csv
+│       ├── tokenization_comparison.parquet
+│       ├── tokenization_comparison_preview.csv
+│       ├── duplicate_summary.parquet
+│       ├── duplicate_summary_preview.csv
+│       ├── header_metadata_preview.parquet
+│       └── header_metadata_preview.csv
+└── processed/
 
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
+results/
+└── protein_eda/
+    ├── figures/
+    └── analysis_artifact_manifest.json
 
-frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+util/
+└── python/
+    └── (optional) shared parsing or tokenization helpers only if notebook repetition justifies extraction
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: Keep the feature notebook at repository root as `EDA.ipynb` to match the feature spec and existing root-level exploratory notebook pattern (`EDA_data.ipynb`). Save reusable tables under `data/interim/protein_eda/` and figures/manifests under `results/protein_eda/`. Only extract helper code into `util/python/` if notebook repetition materially harms readability.
+
+## Phase 2 Planning Preview (for `/speckit.tasks`)
+
+1. Create or update `EDA.ipynb` with imports-first and config-second cells.
+2. Implement full-corpus FASTA discovery, parsing, provenance capture, and parse-error reporting.
+3. Add raw sequence profiling, residue distribution analysis, malformed-header reporting, and duplicate analysis.
+4. Add tokenization simulation and comparison for single, 3-mer, 5-mer, and BPE strategies with scope-aware execution.
+5. Persist CSV preview plus Parquet artifacts and an analysis manifest.
+6. Add metadata curation preview and final recommendation sections.
+7. Validate Run All execution order and artifact outputs.
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
-
-| Violation                  | Why Needed         | Simpler Alternative Rejected Because |
-| -------------------------- | ------------------ | ------------------------------------ |
-| [e.g., 4th project]        | [current need]     | [why 3 projects insufficient]        |
-| [e.g., Repository pattern] | [specific problem] | [why direct DB access insufficient]  |
+No constitution violations requiring justification.
