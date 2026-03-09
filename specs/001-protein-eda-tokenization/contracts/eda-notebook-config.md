@@ -16,6 +16,18 @@ The second notebook cell defines the shared runtime constants. Required keys:
 - `RARE_RESIDUE_POLICY`
 - `SAMPLE_MODE`
 
+All runtime controls and switches MUST be declared in this config block. This includes optional overrides and output controls.
+
+Optional config keys that the notebook may expose in the same config block:
+
+- `ANALYSIS_SCOPE_OVERRIDE`
+- `BPE_CANDIDATE_MODES`
+- `RESIDUE_POLICY_SENSITIVITY_MODES`
+- `ARTIFACT_OUTPUT_DIR`
+- `FIGURE_OUTPUT_DIR`
+- `SAVE_ARTIFACTS`
+- `SAVE_FIGURES`
+
 Baseline documented values:
 
 - `DATA_ROOT="data/raw/prot_only_dehydrated/ncbi_dataset/data"`
@@ -35,6 +47,7 @@ Optional explicit overrides may narrow the scope of expensive tokenization-compa
 
 - Imports appear in notebook cell 1.
 - Shared configuration appears in notebook cell 2.
+- Runtime controls are not introduced outside the config block.
 - Parsing and statistics cells precede recommendation cells.
 - Malformed FASTA records or headers are reported and summarized instead of silently ignored.
 - Raw provenance outputs and deduplicated planning outputs remain distinct.

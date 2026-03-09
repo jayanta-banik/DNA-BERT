@@ -16,7 +16,7 @@ Build a rerunnable notebook-first EDA workflow in `EDA.ipynb` that parses all cu
 **Target Platform**: Linux Jupyter environment with the existing `venv3` activated or available via `source ~/venv3/bin/activate`  
 **Project Type**: Exploratory notebook and file-backed data-analysis workflow  
 **Performance Goals**: Parse the current corpus (`22,141` `protein.faa` files) in a single rerunnable notebook workflow, compute corpus-wide descriptive statistics on the full dataset, and keep expensive tokenization comparisons explicitly scope-controlled and auditable  
-**Constraints**: Notebook imports first and shared constants second, Run All safe cell order, fail-fast config validation, no silent fallback, preserve raw FASTA/header provenance, save file-facing schemas in `snake_case`, and record scope overrides for expensive analyses  
+**Constraints**: Notebook imports first and shared constants second, Run All safe cell order, fail-fast config validation, no silent fallback, preserve raw FASTA/header provenance, save file-facing schemas in `snake_case`, record scope overrides for expensive analyses, and keep all runtime controls in the config block  
 **Scale/Scope**: Current corpus spans `22,141` FASTA files with sequence count determined at runtime, full-corpus parsing is in scope, and tokenization comparison may mix full-corpus and explicitly overridden scopes depending on user-selected runtime configuration
 
 ## Constitution Check
@@ -118,9 +118,10 @@ util/
 2. Implement full-corpus FASTA discovery, parsing, provenance capture, and parse-error reporting.
 3. Add raw sequence profiling, residue distribution analysis, malformed-header reporting, and duplicate analysis.
 4. Add tokenization simulation and comparison for single, 3-mer, 5-mer, and BPE strategies with scope-aware execution.
-5. Persist CSV preview plus Parquet artifacts and an analysis manifest.
-6. Add metadata curation preview and final recommendation sections.
-7. Validate Run All execution order and artifact outputs.
+5. Verify notebook-environment dependencies for Parquet export and BPE comparison before relying on those features.
+6. Persist CSV preview plus Parquet artifacts and an analysis manifest.
+7. Add metadata curation preview, residue-policy comparison evidence plots, and final recommendation sections.
+8. Validate Run All execution order and artifact outputs.
 
 ## Complexity Tracking
 

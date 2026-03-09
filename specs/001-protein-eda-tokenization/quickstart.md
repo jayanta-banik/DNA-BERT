@@ -39,9 +39,17 @@ TOKENIZATION_STRATEGIES = ["single", "3-mer", "5-mer", "BPE"]
 AMBIGUOUS_RESIDUE_MODE = "keep"
 RARE_RESIDUE_POLICY = "replace_with_unk"
 SAMPLE_MODE = "all"
+ANALYSIS_SCOPE_OVERRIDE = None
+BPE_CANDIDATE_MODES = []
+RESIDUE_POLICY_SENSITIVITY_MODES = []
+ARTIFACT_OUTPUT_DIR = "data/interim/protein_eda"
+FIGURE_OUTPUT_DIR = "results/protein_eda/figures"
+SAVE_ARTIFACTS = True
+SAVE_FIGURES = True
 ```
 
-5. If expensive tokenization comparison should run on a narrower scope, set the explicit override in the config block and ensure the notebook records that override in outputs.
+5. Keep every runtime control and switch in this config block rather than introducing ad hoc flags later in the notebook.
+6. If expensive tokenization comparison should run on a narrower scope, set the explicit override in the config block and ensure the notebook records that override in outputs.
 
 ## Run
 
@@ -53,8 +61,10 @@ SAMPLE_MODE = "all"
    - raw sequence statistics and plots
    - duplicate analysis
    - tokenization comparison outputs
-   - metadata preview outputs
-   - final recommendation section
+
+- residue-policy sensitivity comparison outputs
+- metadata preview outputs
+- final recommendation section
 
 ## Expected Saved Outputs
 
@@ -82,4 +92,5 @@ Results under `results/protein_eda/`:
 - Parse issues and malformed headers are reported instead of silently ignored.
 - Raw provenance and deduplicated candidate outputs remain distinct.
 - Tokenization artifacts record whether they used baseline `SAMPLE_MODE="all"` or an explicit scope override.
+- Alternative residue-handling policies are compared explicitly with evidence tables or plots when sensitivity analysis is enabled.
 - Large tables are saved as Parquet and human-inspection previews are available as CSV.

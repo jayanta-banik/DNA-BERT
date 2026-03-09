@@ -12,6 +12,11 @@
   - `sample_mode` (string, required, baseline default `all`)
   - `analysis_scope_override` (string, optional)
   - `bpe_candidate_modes` (array of strings, optional)
+  - `residue_policy_sensitivity_modes` (array of strings, optional)
+  - `artifact_output_dir` (string, optional)
+  - `figure_output_dir` (string, optional)
+  - `save_artifacts` (boolean, optional)
+  - `save_figures` (boolean, optional)
 - Validation Rules:
   - Reject invalid strategy names or unsupported residue-policy values.
   - Record whether the run used baseline defaults or an explicit scope override.
@@ -55,6 +60,7 @@
   - `affected_sequence_count` (integer, required)
   - `tokenization_impacts` (object, required)
   - `recommendation_effect` (string, required)
+  - `evidence_plot_paths` (array of strings, optional)
 - Validation Rules:
   - Exactly one policy is marked as primary in a notebook run.
 
