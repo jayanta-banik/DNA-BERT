@@ -174,5 +174,5 @@ def parse_fasta_corpus(data_root: str | Path) -> Iterable[tuple[list[FastaRecord
     fasta_files = discover_fasta_files(data_root)
     print(f"Discovered {len(fasta_files)} FASTA files in {data_root}")
 
-    for fasta_file in tqdm(fasta_files, desc="Parsing FASTA files"):
+    for fasta_file in tqdm(fasta_files[:20], desc="Parsing FASTA files"):
         yield parse_fasta_file(fasta_file)
