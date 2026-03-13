@@ -1,0 +1,71 @@
+{
+  "run_date": "2026-03-11T13:13:47.186065+00:00",
+  "data_root": "data/raw/prot_only_dehydrated/ncbi_dataset/data",
+  "max_length": 512,
+  "sample_mode": "all",
+  "analysis_scope_override": null,
+  "tokenization_strategies": [
+    "single",
+    "3-mer",
+    "5-mer",
+    "BPE"
+  ],
+  "ambiguous_residue_mode": "keep",
+  "rare_residue_policy": "replace_with_unk",
+  "artifacts": [
+    {
+      "artifact_name": "sequence_stats",
+      "artifact_role": "table",
+      "storage_format": "parquet",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/sequence_stats.parquet",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": false
+    },
+    {
+      "artifact_name": "sequence_stats_preview",
+      "artifact_role": "table",
+      "storage_format": "csv",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/sequence_stats_preview.csv",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": true
+    },
+    {
+      "artifact_name": "duplicate_summary",
+      "artifact_role": "table",
+      "storage_format": "parquet",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/duplicate_summary.parquet",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": false
+    },
+    {
+      "artifact_name": "duplicate_summary_preview",
+      "artifact_role": "table",
+      "storage_format": "csv",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/duplicate_summary_preview.csv",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": true
+    },
+    {
+      "artifact_name": "header_metadata_preview",
+      "artifact_role": "table",
+      "storage_format": "parquet",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/header_metadata_preview.parquet",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": false
+    },
+    {
+      "artifact_name": "header_metadata_preview",
+      "artifact_role": "table",
+      "storage_format": "csv",
+      "path": "/home/ubuntu/projects/biodata/DNA-BERT/data/interim/protein_eda/header_metadata_preview.csv",
+      "analysis_scope": "configured",
+      "source_view": null,
+      "is_preview": true
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dna-bert/specs/001-protein-eda-tokenization/contracts/analysis-artifact-manifest.schema.json",
+  "title": "Protein EDA Analysis Artifact Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_date",
+    "data_root",
+    "max_length",
+    "sample_mode",
+    "tokenization_strategies",
+    "ambiguous_residue_mode",
+    "rare_residue_policy",
+    "artifacts"
+  ],
+  "properties": {
+    "run_date": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_root": {
+      "type": "string",
+      "minLength": 1
+    },
+    "max_length": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sample_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "analysis_scope_override": {
+      "type": ["string", "null"]
+    },
+    "tokenization_strategies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "ambiguous_residue_mode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "rare_residue_policy": {
+      "type": "string",
+      "minLength": 1
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_name",
+          "artifact_role",
+          "storage_format",
+          "path",
+          "analysis_scope",
+          "is_preview"
+        ],
+        "properties": {
+          "artifact_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "artifact_role": {
+            "type": "string",
+            "enum": ["table", "figure", "manifest"]
+          },
+          "storage_format": {
+            "type": "string",
+            "enum": ["csv", "parquet", "json", "png", "svg"]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "analysis_scope": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source_view": {
+            "type": ["string", "null"]
+          },
+          "is_preview": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
