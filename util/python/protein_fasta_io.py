@@ -21,23 +21,17 @@ class ParseIssue:
 
 @dataclass(slots=True)
 class FastaRecord:
-    sequence_id: str
     assembly_id: str
-    name: str
-    file_path: str
-    contains_ambiguous_residue: bool
-    header_is_malformed: bool
-    header_fields: dict[str, object]
+    sequence_id: str
+    ambiguous_residues: str
+    # file_path: str
+    functional_annotations: str
     raw_header: str
     sequence_length: int
     sequence: str
-    parse_status: str
-    annotations: dict[str, object] | None = None
-    letter_annotations: dict[str, list] | None = None
-    issue: ParseIssue | None = None
 
     def to_dict(self):
-        return {slot: getattr(self, slot) for slot in self.__slots__}
+        return {slot: getattr(self, slot) for slot in self.__slots__ if getattr(self, slot) is not None}
 
 
 def discover_fasta_files(data_root: str | Path) -> list[Path]:
@@ -88,9 +82,16 @@ def extract_header_fields(raw_header: str) -> tuple[dict[str, object], bool]:
     return fields, False
 
 
-def contains_ambiguous_residue(sequence: str) -> bool:
+def extract_ambiguous_residues(sequence: str) -> set[str]:
     canonical = set("ACDEFGHIKLMNPQRSTVWY")
-    return any(residue.upper() not in canonical for residue in sequence)
+    return set(sequence) - canonical
+
+
+def extract_functional_annotations(raw_header: str) -> list[str]:
+    parts = raw_header.strip().split(" ")
+    if len(parts) <= 1:
+        return []
+    return " ".join(parts[1:]).split("[")[0].strip()
 
 
 def parse_fasta_file(file_path):
@@ -111,18 +112,12 @@ def parse_fasta_file(file_path):
             )
         ]
 
-    # print("features:", entries[0].features)
-
     for entry in entries:
         raw_header = str(entry.description).strip()
         sequence = str(entry.seq).strip()
-        annotations = entry.annotations
-        has_annotations = bool(annotations)
-        letter_annotations = entry.letter_annotations
-        has_letter_annotations = bool(letter_annotations)
+        sequence_id = str(entry.id)
+        ambiguous_residues = extract_ambiguous_residues(sequence)
 
-        header_fields, header_is_malformed = extract_header_fields(raw_header)
-        sequence_id = str(entry.id or header_fields.get("sequence_id_token") or "")
         if not sequence:
             parse_issues.append(
                 ParseIssue(
@@ -135,44 +130,29 @@ def parse_fasta_file(file_path):
             )
             continue
 
-        parse_status = "parsed"
-        parse_issue = None
-        if header_is_malformed:
-            parse_status = "malformed_header"
-            parse_issue = ParseIssue(
-                file_path=str(file_path),
-                assembly_id=assembly_id,
-                issue_type="malformed_header",
-                issue_message="Header does not match expected parseable structure",
-                record_identifier=sequence_id or None,
-            )
-            parse_issues.append(parse_issue)
-
         parsed_records.append(
             FastaRecord(
-                sequence_id=sequence_id or raw_header,
                 assembly_id=assembly_id,
-                name=entry.name,
-                file_path=str(file_path),
-                contains_ambiguous_residue=contains_ambiguous_residue(sequence),
-                header_fields=header_fields,
-                header_is_malformed=header_is_malformed,
+                sequence_id=sequence_id,
+                ambiguous_residues="".join(sorted(ambiguous_residues)) if ambiguous_residues else "",
+                # file_path=str(file_path),
+                functional_annotations=extract_functional_annotations(raw_header),
                 raw_header=raw_header,
                 sequence_length=len(sequence),
                 sequence=sequence,
-                parse_status=parse_status,
-                annotations=annotations if has_annotations else None,
-                letter_annotations=letter_annotations if has_letter_annotations else None,
-                issue=parse_issue,
             )
         )
 
     return parsed_records, parse_issues
 
 
-def parse_fasta_corpus(data_root: str | Path) -> Iterable[tuple[list[FastaRecord], list[ParseIssue]]]:
+def parse_fasta_corpus(data_root: str | Path, sample_size: int) -> Iterable[tuple[list[FastaRecord], list[ParseIssue]]]:
     fasta_files = discover_fasta_files(data_root)
     print(f"Discovered {len(fasta_files)} FASTA files in {data_root}")
 
-    for fasta_file in tqdm(fasta_files[:40], desc="Parsing FASTA files"):
+    if sample_size is not None and sample_size > 0:
+        fasta_files = fasta_files[:sample_size]
+        print(f"Sampling first {len(fasta_files)} FASTA files for parsing")
+
+    for fasta_file in tqdm(fasta_files, desc="Parsing FASTA files"):
         yield parse_fasta_file(fasta_file)
