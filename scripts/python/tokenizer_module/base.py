@@ -68,8 +68,9 @@ class ProteinTokenizer:
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
         path = save_dir / "tokenizer.json"
-        self.tokenizer.save(str(path))
-        print(f"Saved {self.name} tokenizer to: {path}")
+        print(f"[ProteinTokenizer.save] writing tokenizer JSON to {path}", flush=True)
+        self.tokenizer.save(str(path), pretty=False)
+        print(f"Saved {self.name} tokenizer to: {path}", flush=True)
         return path
 
     def load(self, path):
@@ -96,10 +97,11 @@ class ProteinTokenizer:
             print(f"{idx:>4}  {token}")
 
     def count_learned_tokens(self):
+        print(f"[ProteinTokenizer.count_learned_tokens] reading vocab for {self.name}", flush=True)
         vocab = self.tokenizer.get_vocab()
-        learned = [t for t in vocab if len(t) > 1 and not t.startswith("[")]
-        print(f"Learned tokens: {len(learned)}")
-        return len(learned)
+        learned = sum(1 for token in vocab if len(token) > 1 and not token.startswith("["))
+        print(f"Learned tokens: {learned}", flush=True)
+        return learned
 
     def pipeline(self, sequences):
         for seq in sequences:

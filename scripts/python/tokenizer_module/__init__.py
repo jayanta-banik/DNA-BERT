@@ -6,21 +6,6 @@ from .unigram_tokenizer import UnigramTokenizer
 from .wordpiece_tokenizer import WordPieceTokenizer
 from .words_tokenizer import WordsTokenizer
 
-__all__ = [
-    "BPETokenizer",
-    "KmersTokenizer",
-    "ProteinTokenizer",
-    "RARE_RESIDUES",
-    "SequenceNormalizer",
-    "SPECIAL_TOKENS",
-    "STANDARD_RESIDUES",
-    "UnigramTokenizer",
-    "WordPieceTokenizer",
-    "WordsTokenizer",
-    "create_tokenizer",
-    "load_tokenizer",
-]
-
 TOKENIZER_REGISTRY = {
     "BPE": BPETokenizer,
     "Unigram": UnigramTokenizer,

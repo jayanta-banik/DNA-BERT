@@ -23,6 +23,5 @@ class UnigramTokenizer(ProteinTokenizer):
         )
 
         self._configure_postprocessing()
-        self.save(save_dir)
         print(f"Vocab size learned: {self.tokenizer.get_vocab_size()}")
         return self
