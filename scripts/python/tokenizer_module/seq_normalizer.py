@@ -1,3 +1,6 @@
+from tokenizers.normalizers import Normalizer
+
+
 class SequenceNormalizer:
     def __init__(
         self,
@@ -9,6 +12,9 @@ class SequenceNormalizer:
         self.standard_residues = standard_residues
         self.rare_residues = rare_residues
         self.valid_residues = standard_residues.union(rare_residues)
+
+    def as_tokenizer_normalizer(self, add_spaces=True):
+        return Normalizer.custom(_TokenizerSequenceNormalizer(self, add_spaces=add_spaces))
 
     def normalize(self, seq, add_spaces=True):
         """
@@ -40,3 +46,17 @@ class SequenceNormalizer:
         if add_spaces:
             return " ".join(out)
         return "".join(out)
+
+
+class _TokenizerSequenceNormalizer:
+    def __init__(self, sequence_normalizer, add_spaces=True):
+        self.sequence_normalizer = sequence_normalizer
+        self.add_spaces = add_spaces
+
+    def normalize(self, normalized):
+        normalized_seq = self.sequence_normalizer.normalize(
+            str(normalized),
+            add_spaces=self.add_spaces,
+        )
+        normalized.clear()
+        normalized.append(normalized_seq)

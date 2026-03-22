@@ -1,6 +1,8 @@
+import gc
 from pathlib import Path
 
 from tokenizers import Tokenizer, processors
+from transformers import PreTrainedTokenizerFast
 from util.file_utils import iter_dataset
 
 from .seq_normalizer import SequenceNormalizer
@@ -33,18 +35,30 @@ class ProteinTokenizer:
         norm = self.normalize(seq)
         return self.tokenizer.encode(norm)
 
-    def iter_training_corpus(self, protein_dataset, batch_size):
+    def iter_training_corpus(self, protein_dataset, batch_size, batched=False):
+        i = 0
         for batch in iter_dataset(protein_dataset, batch_size=batch_size, desc=f"Preparing {self.name} corpus"):
-            seq_col = batch.column("sequence")
-            for seq_scalar in seq_col:
-                if not seq_scalar.is_valid:
-                    continue
-                seq = seq_scalar.as_py()
-                if not seq:
-                    continue
-                norm = self.normalize(seq)
-                if norm:
-                    yield norm
+            i += 1
+
+            if batched:
+                yield batch.column("sequence").to_pandas().apply(self.normalize).tolist()
+            else:
+                for seq_scalar in batch.column("sequence"):
+                    yield self.normalize(seq_scalar.as_py())
+
+            if i % 100 == 0:
+                gc.collect()
+
+    def iter_raw_corpus(self, protein_dataset, batch_size, batched=False):
+        for batch in iter_dataset(protein_dataset, batch_size=batch_size, desc=f"Preparing {self.name} raw corpus"):
+            sequence_batch = self._extract_sequence_batch(batch)
+            if batched:
+                if sequence_batch:
+                    yield sequence_batch
+                continue
+
+            yield from sequence_batch
+            gc.collect()
 
     def train(self, **kwargs):
         raise NotImplementedError(f"{self.name} does not support training")
@@ -68,9 +82,20 @@ class ProteinTokenizer:
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
         path = save_dir / "tokenizer.json"
-        print(f"[ProteinTokenizer.save] writing tokenizer JSON to {path}", flush=True)
+        print(f"[ProteinTokenizer.save] writing tokenizer JSON to {path}")
         self.tokenizer.save(str(path), pretty=False)
-        print(f"Saved {self.name} tokenizer to: {path}", flush=True)
+        print(f"Saved {self.name} tokenizer to: {path}")
+
+        hf_tokenizer = PreTrainedTokenizerFast(
+            tokenizer_object=self.tokenizer,
+            unk_token="[UNK]",
+            pad_token="[PAD]",
+            cls_token="[CLS]",
+            sep_token="[SEP]",
+            mask_token="[MASK]",
+        )
+
+        hf_tokenizer.save_pretrained(str(save_dir / f"{self.name}_fast_tokenizer"))
         return path
 
     def load(self, path):
@@ -97,10 +122,10 @@ class ProteinTokenizer:
             print(f"{idx:>4}  {token}")
 
     def count_learned_tokens(self):
-        print(f"[ProteinTokenizer.count_learned_tokens] reading vocab for {self.name}", flush=True)
+        print(f"[ProteinTokenizer.count_learned_tokens] reading vocab for {self.name}")
         vocab = self.tokenizer.get_vocab()
         learned = sum(1 for token in vocab if len(token) > 1 and not token.startswith("["))
-        print(f"Learned tokens: {learned}", flush=True)
+        print(f"Learned tokens: {learned}")
         return learned
 
     def pipeline(self, sequences):

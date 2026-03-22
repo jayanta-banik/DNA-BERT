@@ -17,7 +17,7 @@ class WordPieceTokenizer(ProteinTokenizer):
         )
 
         self.tokenizer.train_from_iterator(
-            iterator=self.iter_training_corpus(protein_table, batch_size=batch_size, total_batches=total_batches),
+            iterator=self.iter_training_corpus(protein_table, batch_size=batch_size, batched=True),
             trainer=trainer,
         )
 
