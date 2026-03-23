@@ -31,6 +31,9 @@ class ProteinTokenizer:
     def normalize(self, seq):
         return self.normalizer.normalize(seq)
 
+    def normalized_corpus_dir(self, save_dir):
+        return Path(save_dir) / "normalized_corpus"
+
     def encode(self, seq):
         norm = self.normalize(seq)
         return self.tokenizer.encode(norm)
@@ -48,6 +51,64 @@ class ProteinTokenizer:
 
             if i % 100 == 0:
                 gc.collect()
+
+    def write_normalized_corpus(
+        self,
+        protein_dataset,
+        save_dir,
+        batch_size,
+        lines_per_file=500000,
+        overwrite=False,
+    ):
+        corpus_dir = self.normalized_corpus_dir(save_dir)
+        existing_files = sorted(corpus_dir.glob("part-*.txt"))
+        if existing_files and not overwrite:
+            print(f"[ProteinTokenizer.write_normalized_corpus] reusing {len(existing_files)} files from {corpus_dir}")
+            return existing_files
+
+        corpus_dir.mkdir(parents=True, exist_ok=True)
+        for path in existing_files:
+            path.unlink()
+
+        file_paths = []
+        file_index = 0
+        line_count = 0
+        handle = None
+
+        def open_next_file():
+            nonlocal file_index, line_count, handle
+            if handle is not None:
+                handle.close()
+
+            path = corpus_dir / f"part-{file_index:05d}.txt"
+            handle = path.open("w", encoding="utf-8")
+            file_paths.append(path)
+            file_index += 1
+            line_count = 0
+
+        open_next_file()
+
+        try:
+            for normalized_seq in self.iter_training_corpus(protein_dataset, batch_size=batch_size, batched=False):
+                if not normalized_seq:
+                    continue
+
+                handle.write(normalized_seq)
+                handle.write("\n")
+                line_count += 1
+
+                if line_count >= lines_per_file:
+                    open_next_file()
+        finally:
+            if handle is not None:
+                handle.close()
+
+        if file_paths and file_paths[-1].stat().st_size == 0:
+            file_paths[-1].unlink()
+            file_paths.pop()
+
+        print(f"[ProteinTokenizer.write_normalized_corpus] wrote {len(file_paths)} files to {corpus_dir}")
+        return file_paths
 
     def iter_raw_corpus(self, protein_dataset, batch_size, batched=False):
         for batch in iter_dataset(protein_dataset, batch_size=batch_size, desc=f"Preparing {self.name} raw corpus"):

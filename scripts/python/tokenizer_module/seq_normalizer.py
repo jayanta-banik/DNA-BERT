@@ -13,10 +13,10 @@ class SequenceNormalizer:
         self.rare_residues = rare_residues
         self.valid_residues = standard_residues.union(rare_residues)
 
-    def as_tokenizer_normalizer(self, add_spaces=True):
+    def as_tokenizer_normalizer(self, add_spaces=False):
         return Normalizer.custom(_TokenizerSequenceNormalizer(self, add_spaces=add_spaces))
 
-    def normalize(self, seq, add_spaces=True):
+    def normalize(self, seq, add_spaces=False):
         """
         Normalize one protein sequence.
         - uppercases

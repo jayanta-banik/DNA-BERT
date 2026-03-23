@@ -8,9 +8,19 @@ class BPETokenizer(ProteinTokenizer):
     requires_training = True
 
     def normalize(self, seq):
-        return self.normalizer.normalize(seq, add_spaces=False)
+        return self.normalizer.normalize(seq, add_spaces=True)
 
-    def train(self, protein_table, save_dir, vocab_size, min_frequency=2, batch_size=65536, **kwargs):
+    def train(
+        self,
+        protein_table,
+        save_dir,
+        vocab_size,
+        min_frequency=2,
+        batch_size=65536,
+        lines_per_corpus_file=50000,
+        overwrite_corpus=False,
+        **kwargs,
+    ):
         print(f"[BPETokenizer.train] start vocab_size={vocab_size} min_frequency={min_frequency} batch_size={batch_size}")
 
         self.tokenizer = Tokenizer(models.BPE(unk_token="[UNK]"))
@@ -25,16 +35,23 @@ class BPETokenizer(ProteinTokenizer):
         )
         print("[BPETokenizer.train] trainer configured")
 
-        print("[BPETokenizer.train] train_from_iterator begin")
-        self.tokenizer.train_from_iterator(
-            iterator=self.iter_training_corpus(protein_table, batch_size=batch_size, batched=True),
-            trainer=trainer,
+        print("[BPETokenizer.train] writing normalized corpus begin")
+        corpus_files = self.write_normalized_corpus(
+            protein_dataset=protein_table,
+            save_dir=save_dir,
+            batch_size=batch_size,
+            lines_per_file=lines_per_corpus_file,
+            overwrite=overwrite_corpus,
         )
-        print("[BPETokenizer.train] train_from_iterator done")
+        print(f"[BPETokenizer.train] writing normalized corpus done ({len(corpus_files)} files)")
+
+        print("[BPETokenizer.train] file training begin")
+        self.tokenizer.train(files=[str(path) for path in corpus_files], trainer=trainer)
+        print("[BPETokenizer.train] file training done")
         self.tokenizer.decoder = decoders.BPEDecoder()
 
         print("[BPETokenizer.train] postprocessing configuration begin")
-        self._configure_postprocessing()
         print("[BPETokenizer.train] postprocessing configuration done")
         print(f"Vocab size learned: {self.tokenizer.get_vocab_size()}")
+        self._configure_postprocessing()
         return self
