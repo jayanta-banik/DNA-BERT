@@ -8,7 +8,7 @@ class BPETokenizer(ProteinTokenizer):
     requires_training = True
 
     def normalize(self, seq):
-        return self.normalizer.normalize(seq, add_spaces=True)
+        return self.normalizer.normalize(seq, add_spaces=True, k_mer_length=5)
 
     def train(
         self,

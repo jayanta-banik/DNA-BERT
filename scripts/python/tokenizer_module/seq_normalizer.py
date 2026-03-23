@@ -16,7 +16,7 @@ class SequenceNormalizer:
     def as_tokenizer_normalizer(self, add_spaces=False):
         return Normalizer.custom(_TokenizerSequenceNormalizer(self, add_spaces=add_spaces))
 
-    def normalize(self, seq, add_spaces=False):
+    def normalize(self, seq, add_spaces=False, k_mer_length=None):
         """
         Normalize one protein sequence.
         - uppercases
@@ -26,6 +26,9 @@ class SequenceNormalizer:
         """
         seq = seq.upper().replace(" ", "")
         out = []
+
+        if k_mer_length is not None and k_mer_length > 1 and self.rare_residue_policy == "keep":
+            pass
 
         for ch in seq:
             if ch in self.standard_residues:
@@ -44,6 +47,8 @@ class SequenceNormalizer:
                 continue
 
         if add_spaces:
+            if k_mer_length is not None and k_mer_length > 1:
+                return " ".join("".join(out[i : i + k_mer_length]) for i in range(len(out) - k_mer_length + 1))
             return " ".join(out)
         return "".join(out)
 
