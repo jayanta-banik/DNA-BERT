@@ -27,9 +27,6 @@ class SequenceNormalizer:
         seq = seq.upper().replace(" ", "")
         out = []
 
-        if k_mer_length is not None and k_mer_length > 1 and self.rare_residue_policy == "keep":
-            pass
-
         for ch in seq:
             if ch in self.standard_residues:
                 out.append(ch)

@@ -90,9 +90,6 @@ class ProteinTokenizer:
 
         try:
             for normalized_seq in self.iter_training_corpus(protein_dataset, batch_size=batch_size, batched=False):
-                if not normalized_seq:
-                    continue
-
                 handle.write(normalized_seq)
                 handle.write("\n")
                 line_count += 1

@@ -1,18 +1,21 @@
 import json
 import shutil
+import sys
 from dataclasses import dataclass
 from pathlib import Path
+
+import sentencepiece as spm
 
 from .base import SPECIAL_TOKENS, ProteinTokenizer
 
 
-def _require_sentencepiece():
-    try:
-        import sentencepiece as spm
-    except ImportError as exc:
-        raise ImportError("SentencePieceTokenizer requires the `sentencepiece` package in the active Python environment.") from exc
+class LiveLogger:
+    def write(self, msg):
+        sys.stdout.write(msg)
+        sys.stdout.flush()
 
-    return spm
+    def flush(self):
+        sys.stdout.flush()
 
 
 @dataclass
@@ -56,13 +59,14 @@ class SentencePieceTokenizer(ProteinTokenizer):
     name = "SentencePiece"
     requires_training = True
 
-    def __init__(self, model_type="unigram", character_coverage=1.0, **kwargs):
+    def __init__(self, model_type="bpe", character_coverage=1.0, **kwargs):
         super().__init__(**kwargs)
         self.model_type = model_type
         self.character_coverage = character_coverage
         self.model_path = None
         self.vocab_path = None
         self.processor = None
+        print(f"Initialized {self.name} tokenizer with model_type={model_type} character_coverage={character_coverage}")
 
     def train(
         self,
@@ -74,9 +78,9 @@ class SentencePieceTokenizer(ProteinTokenizer):
         overwrite_corpus=False,
         input_sentence_size=0,
         shuffle_input_sentence=True,
+        verbose=True,
         **kwargs,
     ):
-        spm = _require_sentencepiece()
         save_dir = Path(save_dir)
         save_dir.mkdir(parents=True, exist_ok=True)
 
@@ -101,6 +105,7 @@ class SentencePieceTokenizer(ProteinTokenizer):
             "model_type": self.model_type,
             "vocab_size": vocab_size,
             "character_coverage": self.character_coverage,
+            "normalization_rule_name": "identity",
             "hard_vocab_limit": False,
             "split_by_whitespace": False,
             "shuffle_input_sentence": shuffle_input_sentence,
@@ -114,11 +119,16 @@ class SentencePieceTokenizer(ProteinTokenizer):
             "eos_piece": "[SEP]",
             "user_defined_symbols": ["[MASK]", "[UNKAA]"],
         }
+
         if input_sentence_size:
             train_kwargs["input_sentence_size"] = input_sentence_size
 
         print("[SentencePieceTokenizer.train] model training begin")
-        spm.SentencePieceTrainer.train(**train_kwargs)
+        if verbose:
+            with open("spm_train.log", "w") as f:
+                spm.SentencePieceTrainer.train(**train_kwargs, logstream=f)
+        else:
+            spm.SentencePieceTrainer.train(**train_kwargs)
         print("[SentencePieceTokenizer.train] model training done")
 
         self._load_processor(model_prefix.with_suffix(".model"))
@@ -177,7 +187,6 @@ class SentencePieceTokenizer(ProteinTokenizer):
         return self
 
     def _load_processor(self, model_path):
-        spm = _require_sentencepiece()
         model_path = Path(model_path)
         processor = spm.SentencePieceProcessor(model_file=str(model_path))
 
