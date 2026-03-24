@@ -1,6 +1,3 @@
-# Utilities
+# Node Source
 
-Main reusable code modules.
-
-- `node/`: reusable Node.js modules
-- `python/`: reusable Python modules
+Reusable Node.js source modules.
