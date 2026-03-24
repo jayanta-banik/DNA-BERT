@@ -3,6 +3,7 @@ from .bpe_tokenizer import BPETokenizer
 from .kmers_tokenizer import KmersTokenizer
 from .sentencepiece_tokenizer import SentencePieceTokenizer
 from .seq_normalizer import SequenceNormalizer
+from .tfidf_tokenizer import TfidfTokenizer
 from .unigram_tokenizer import UnigramTokenizer
 from .wordpiece_tokenizer import WordPieceTokenizer
 from .words_tokenizer import WordsTokenizer
@@ -10,6 +11,7 @@ from .words_tokenizer import WordsTokenizer
 TOKENIZER_REGISTRY = {
     "BPE": BPETokenizer,
     "SentencePiece": SentencePieceTokenizer,
+    "TFIDF": TfidfTokenizer,
     "Unigram": UnigramTokenizer,
     "WordPiece": WordPieceTokenizer,
     "words": WordsTokenizer,
@@ -26,6 +28,7 @@ __all__ = [
     "SentencePieceTokenizer",
     "SequenceNormalizer",
     "TOKENIZER_REGISTRY",
+    "TfidfTokenizer",
     "UnigramTokenizer",
     "WordPieceTokenizer",
     "WordsTokenizer",

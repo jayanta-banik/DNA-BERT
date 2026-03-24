@@ -5,6 +5,8 @@ Auto-generated from all feature plans. Last updated: 2026-03-04
 ## Active Technologies
 - Python in Jupyter notebook workflow using the existing `~/venv3` environment + Python standard library, `pandas`, `matplotlib`, `numpy`, `pyarrow` for Parquet export, and a BPE tokenizer library suitable for notebook-side corpus fitting such as `sentencepiece` (001-protein-eda-tokenization)
 - Local filesystem (`data/raw/` FASTA corpus, `data/interim/` tabular outputs, `results/` figures/manifests) (001-protein-eda-tokenization)
+- Python 3.12.3 using the repository-selected system interpreter + Python standard library (`collections`, `dataclasses`, `json`, `math`, `pathlib`, `typing`) plus the existing `scripts/python/tokenizer_module` abstractions (`ProteinTokenizer`, `SequenceNormalizer`) (002-dist-tokenizer)
+- Local filesystem (folder of `.txt` shard files for training input, JSON state files for saved tokenizer artifacts) (002-dist-tokenizer)
 
 - JavaScript (Node.js ESM; version managed by project runtime) + `got`, `cheerio`, `cli-progress`, `p-limit` (001-ncbi-bacteria-crawler)
 
@@ -24,6 +26,7 @@ npm test && npm run lint
 JavaScript (Node.js ESM; version managed by project runtime): Follow standard conventions
 
 ## Recent Changes
+- 002-dist-tokenizer: Added Python 3.12.3 using the repository-selected system interpreter + Python standard library (`collections`, `dataclasses`, `json`, `math`, `pathlib`, `typing`) plus the existing `scripts/python/tokenizer_module` abstractions (`ProteinTokenizer`, `SequenceNormalizer`)
 - 001-protein-eda-tokenization: Added Python in Jupyter notebook workflow using the existing `~/venv3` environment + Python standard library, `pandas`, `matplotlib`, `numpy`, `pyarrow` for Parquet export, and a BPE tokenizer library suitable for notebook-side corpus fitting such as `sentencepiece`
 
 - 001-ncbi-bacteria-crawler: Added JavaScript (Node.js ESM; version managed by project runtime) + `got`, `cheerio`, `cli-progress`, `p-limit`
