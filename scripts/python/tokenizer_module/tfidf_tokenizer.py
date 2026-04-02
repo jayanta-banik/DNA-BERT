@@ -125,7 +125,7 @@ class TfidfTokenizer(ProteinTokenizer):
     def normalize(self, seq):
         return "".join(symbol for symbol in self._normalize_symbols(seq, preserve_invalid=False) if symbol)
 
-    def fit(self, file_path, mode="fresh"):
+    def train(self, file_path, mode="fresh"):
         mode = mode.lower()
         if mode not in {"fresh", "continue"}:
             raise ValueError("mode must be one of: fresh, continue")
@@ -156,8 +156,8 @@ class TfidfTokenizer(ProteinTokenizer):
         self._rebuild_vocabulary(allowed_learned_tokens=previous_active_tokens)
         return self
 
-    def continue_fit(self, file_path):
-        return self.fit(file_path, mode="continue")
+    def continue_train(self, file_path):
+        return self.train(file_path, mode="continue")
 
     def tokenize(self, sequence):
         self._ensure_trained()
