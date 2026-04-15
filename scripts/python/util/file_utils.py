@@ -3,9 +3,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pyarrow.dataset as ds
 from tqdm.auto import tqdm
 
 PREVIEW_ROW_LIMIT = 100
+
+
+def ensure_exists(path, label):
+    if not path.exists():
+        raise FileNotFoundError(f"{label} not found: {path}")
 
 
 def ensure_directories(*paths: str | Path) -> None:
@@ -27,3 +33,26 @@ def iter_dataset(dataset, batch_size, desc="Processing rows"):
         for batch in scanner.to_batches():
             yield batch
             pbar.update(batch.num_rows)
+
+
+def find_project_root(start):
+    for candidate in [start] + list(start.parents):
+        if (candidate / "package.json").exists() and (candidate / "results").exists():
+            return candidate
+    raise FileNotFoundError("Could not locate the repository root from the current notebook working directory.")
+
+
+def parquet_to_txt(parquet_path, output_txt_path, column="sequence", batch_size=100_000):
+    dataset = ds.dataset(parquet_path, format="parquet")
+
+    with open(output_txt_path, "w") as f:
+        for batch in iter_dataset(dataset, batch_size=batch_size, desc="Converting parquet to txt"):
+            arr = batch[column]
+
+            # convert to python list (only this batch in memory)
+            values = arr.to_pylist()
+
+            for v in values:
+                if v is not None:
+                    f.write(v)
+                    f.write("\n")
