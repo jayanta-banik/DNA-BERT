@@ -72,3 +72,12 @@ export async function clearRowOutput({ bacteriaOutputDir } = {}) {
 export async function ensureDirectory({ dirPath } = {}) {
   await fs.mkdir(dirPath, { recursive: true });
 }
+
+export async function fileExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}

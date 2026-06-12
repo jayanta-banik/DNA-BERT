@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from hashlib import blake2b
+from os import PathLike
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
@@ -10,13 +12,23 @@ from rapidfuzz import fuzz, process
 from sklearn.metrics.pairwise import cosine_similarity
 
 DEFAULT_METHOD: Literal["fuzzy", "semantic"] = "fuzzy"
-DEFAULT_MODEL_NAME = "all-MiniLM-L6-v2"
+DEFAULT_MODEL_NAME = "google/embeddinggemma-300m"
 DEFAULT_LIMIT = None
 SEMANTIC_BATCH_SIZE = 256
 SEMANTIC_CACHE_SIZE = 4
 
-_EMBEDDING_CACHE: OrderedDict[tuple[str, str], np.ndarray] = OrderedDict()
+_EMBEDDING_CACHE: OrderedDict[tuple[str, str, str], np.ndarray] = OrderedDict()
 _MODEL_CACHE: dict[str, object] = {}
+
+EmbeddingTask = Literal[
+    "retrieval",
+    "similarity",
+    "classification",
+    "clustering",
+    "qa",
+    "fact_check",
+    "code_retrieval",
+]
 
 
 class RankTexts:
@@ -29,6 +41,8 @@ class RankTexts:
         threshold: float | None = None,
         *,
         model_name: str = DEFAULT_MODEL_NAME,
+        embedding_task: EmbeddingTask = "similarity",
+        output_csv: str | PathLike[str] | None = None,
     ):
         """Rank text values against a query using fuzzy or semantic similarity."""
         normalized_values = _normalize_values(values)
@@ -46,22 +60,37 @@ class RankTexts:
         self.limit = limit
         self.threshold = threshold
         self.model_name = model_name
+        self.embedding_task = embedding_task
         self.source_values = normalized_values
 
         if normalized_values.empty:
-            self.results = pd.DataFrame(columns=["value", "score", "rank"])
+            self.all_results = pd.DataFrame(columns=["annotation", "score", "rank"])
+            self.results = pd.DataFrame(columns=["annotation", "score", "rank"])
+            if output_csv is not None:
+                self.to_csv(output_csv)
             return
 
         if method == "fuzzy":
-            self.results = _rank_fuzzy(normalized_values, normalized_query, limit=limit, threshold=threshold)
-        else:
-            self.results = _rank_semantic(
+            self.all_results = _rank_fuzzy(
                 normalized_values,
                 normalized_query,
-                limit=limit,
-                threshold=threshold,
-                model_name=model_name,
             )
+        else:
+            self.all_results = _rank_semantic(
+                normalized_values,
+                normalized_query,
+                model_name=model_name,
+                embedding_task=embedding_task,
+            )
+
+        self.results = _filter_ranked_results(
+            self.all_results,
+            limit=limit,
+            threshold=threshold,
+        )
+
+        if output_csv is not None:
+            self.to_csv(output_csv)
 
     def __call__(self) -> pd.DataFrame:
         return self.to_frame()
@@ -69,18 +98,26 @@ class RankTexts:
     def to_frame(self) -> pd.DataFrame:
         return self.results.copy()
 
+    def to_full_frame(self) -> pd.DataFrame:
+        return self.all_results.copy()
+
+    def to_csv(self, path: str | PathLike[str], *, index: bool = False, export_all: bool = True) -> Path:
+        output_path = _coerce_output_path(path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        frame = self.all_results if export_all else self.results
+        frame = frame.rename(columns={"rank": "semantic_rank"})
+        frame.to_csv(output_path, index=index)
+        return output_path
+
     def sort_values(self) -> pd.Series:
-        """Return ranked values ordered by descending similarity score."""
-        return self.results["value"].reset_index(drop=True)
+        return self.results["annotation"].reset_index(drop=True)
 
     def top_k(self, k: int) -> pd.Series:
-        """Return the top-k most similar values."""
         if k <= 0:
             raise ValueError("k must be a positive integer")
-        return self.results.head(k)["value"].reset_index(drop=True)
+        return self.results.head(k)["annotation"].reset_index(drop=True)
 
     def top_K(self, K: int) -> pd.Series:
-        """Backward-compatible alias for top_k."""
         return self.top_k(K)
 
 
@@ -92,9 +129,20 @@ def rank_texts(
     threshold: float | None = None,
     *,
     model_name: str = DEFAULT_MODEL_NAME,
+    embedding_task: EmbeddingTask = "retrieval",
+    output_csv: str | PathLike[str] | None = None,
 ) -> pd.DataFrame:
-    """Rank text values against a query using fuzzy or semantic similarity."""
-    return RankTexts(values, query, method=method, limit=limit, threshold=threshold, model_name=model_name)
+    """Return ranked texts and optionally export the full ordered input set to CSV."""
+    return RankTexts(
+        values,
+        query,
+        method=method,
+        limit=limit,
+        threshold=threshold,
+        model_name=model_name,
+        embedding_task=embedding_task,
+        output_csv=output_csv,
+    ).to_frame()
 
 
 def _normalize_values(values: list[str] | pd.Series) -> pd.Series:
@@ -108,87 +156,103 @@ def _normalize_values(values: list[str] | pd.Series) -> pd.Series:
     if series.empty:
         return pd.Series(dtype="object")
 
-    normalized = series.dropna().astype(str).reset_index(drop=True)
-    return normalized
+    return series.dropna().astype(str).reset_index(drop=True)
+
+
+def _coerce_output_path(path: str | PathLike[str]) -> Path:
+    output_path = Path(path)
+    if not str(output_path).strip():
+        raise ValueError("output_csv must be a non-empty path")
+    return output_path
 
 
 def _rank_fuzzy(
     values: pd.Series,
     query: str,
-    *,
-    limit: int | None,
-    threshold: float | None,
 ) -> pd.DataFrame:
-    score_cutoff = threshold if threshold is not None else 0.0
     choices = dict(enumerate(values.tolist()))
-    requested_limit = len(choices) if limit is None else min(limit, len(choices))
 
     matches = process.extract(
         query,
         choices,
         scorer=fuzz.WRatio,
         processor=None,
-        limit=requested_limit,
-        score_cutoff=score_cutoff,
+        limit=len(choices),
+        score_cutoff=0.0,
     )
 
-    records = [{"value": value, "score": float(score), "rank": rank} for rank, (value, score, _) in enumerate(matches, start=1)]
-    return pd.DataFrame(records, columns=["value", "score", "rank"])
+    records = [{"annotation": value, "score": float(score), "rank": rank} for rank, (value, score, _) in enumerate(matches, start=1)]
+    return pd.DataFrame(records, columns=["annotation", "score", "rank"])
 
 
 def _rank_semantic(
     values: pd.Series,
     query: str,
     *,
-    limit: int | None,
-    threshold: float | None,
     model_name: str,
+    embedding_task: EmbeddingTask,
 ) -> pd.DataFrame:
-    embeddings = _get_or_create_embeddings(values, model_name=model_name)
-    query_embedding = _encode_query(query, model_name=model_name)
+    embeddings = _get_or_create_embeddings(
+        values,
+        model_name=model_name,
+        embedding_task=embedding_task,
+    )
+    query_embedding = _encode_query(
+        query,
+        model_name=model_name,
+        embedding_task=embedding_task,
+    )
     scores = cosine_similarity(embeddings, query_embedding.reshape(1, -1)).ravel()
-
-    if threshold is not None:
-        candidate_indices = np.flatnonzero(scores >= threshold)
-    else:
-        candidate_indices = np.arange(scores.shape[0])
-
-    if candidate_indices.size == 0:
-        return pd.DataFrame(columns=["value", "score", "rank"])
-
-    ranked_indices = _select_top_indices(scores, candidate_indices, limit=limit)
+    ranked_indices = np.argsort(scores)[::-1]
     records = [
         {
-            "value": values.iloc[index],
+            "annotation": values.iloc[index],
             "score": float(scores[index]),
             "rank": rank,
         }
         for rank, index in enumerate(ranked_indices, start=1)
     ]
-    return pd.DataFrame(records, columns=["value", "score", "rank"])
+    return pd.DataFrame(records, columns=["annotation", "score", "rank"])
 
 
-def _select_top_indices(scores: np.ndarray, candidate_indices: np.ndarray, *, limit: int | None) -> np.ndarray:
-    if limit is None or limit >= candidate_indices.size:
-        order = np.argsort(scores[candidate_indices])[::-1]
-        return candidate_indices[order]
+def _filter_ranked_results(
+    ranked_results: pd.DataFrame,
+    *,
+    limit: int | None,
+    threshold: float | None,
+) -> pd.DataFrame:
+    filtered = ranked_results
 
-    top_partition = np.argpartition(scores[candidate_indices], -limit)[-limit:]
-    top_indices = candidate_indices[top_partition]
-    order = np.argsort(scores[top_indices])[::-1]
-    return top_indices[order]
+    if threshold is not None:
+        filtered = filtered[filtered["score"] >= threshold]
+
+    if limit is not None:
+        filtered = filtered.head(limit)
+
+    if filtered.empty:
+        return pd.DataFrame(columns=["annotation", "score", "rank"])
+
+    filtered = filtered.reset_index(drop=True).copy()
+    filtered["rank"] = np.arange(1, len(filtered) + 1)
+    return filtered
 
 
-def _get_or_create_embeddings(values: pd.Series, *, model_name: str) -> np.ndarray:
-    cache_key = (model_name, _hash_values(values))
+def _get_or_create_embeddings(
+    values: pd.Series,
+    *,
+    model_name: str,
+    embedding_task: EmbeddingTask,
+) -> np.ndarray:
+    cache_key = (model_name, embedding_task, _hash_values(values))
     cached_embeddings = _EMBEDDING_CACHE.get(cache_key)
     if cached_embeddings is not None:
         _EMBEDDING_CACHE.move_to_end(cache_key)
         return cached_embeddings
 
     model = _get_model(model_name)
+    inputs = [_format_document_text(v, embedding_task) for v in values.tolist()]
     embeddings = model.encode(
-        values.tolist(),
+        inputs,
         batch_size=SEMANTIC_BATCH_SIZE,
         convert_to_numpy=True,
         normalize_embeddings=True,
@@ -196,20 +260,58 @@ def _get_or_create_embeddings(values: pd.Series, *, model_name: str) -> np.ndarr
     )
     embeddings = np.asarray(embeddings, dtype=np.float32)
     _EMBEDDING_CACHE[cache_key] = embeddings
+
     if len(_EMBEDDING_CACHE) > SEMANTIC_CACHE_SIZE:
         _EMBEDDING_CACHE.popitem(last=False)
+
     return embeddings
 
 
-def _encode_query(query: str, *, model_name: str) -> np.ndarray:
+def _encode_query(
+    query: str,
+    *,
+    model_name: str,
+    embedding_task: EmbeddingTask,
+) -> np.ndarray:
     model = _get_model(model_name)
+    formatted_query = _format_query_text(query, embedding_task)
     embedding = model.encode(
-        [query],
+        [formatted_query],
         convert_to_numpy=True,
         normalize_embeddings=True,
         show_progress_bar=False,
     )[0]
     return np.asarray(embedding, dtype=np.float32)
+
+
+def _format_query_text(text: str, task: EmbeddingTask) -> str:
+    text = text.strip()
+
+    if task == "retrieval":
+        return f"task: search result | query: {text}"
+    if task == "similarity":
+        return f"task: sentence similarity | query: {text}"
+    if task == "classification":
+        return f"task: classification | query: {text}"
+    if task == "clustering":
+        return f"task: clustering | query: {text}"
+    if task == "qa":
+        return f"task: question answering | query: {text}"
+    if task == "fact_check":
+        return f"task: fact checking | query: {text}"
+    if task == "code_retrieval":
+        return f"task: code retrieval | query: {text}"
+
+    return text
+
+
+def _format_document_text(text: str, task: EmbeddingTask) -> str:
+    text = text.strip()
+
+    if task in {"retrieval", "qa", "fact_check", "code_retrieval"}:
+        return f"title: none | text: {text}"
+
+    return text
 
 
 def _get_model(model_name: str):
