@@ -35,5 +35,9 @@ Thumbs.db
 **.faa
 **.txt
 
+# data folders
+data/raw/
+data/interim/
+
 
 **/normalized_courses/
