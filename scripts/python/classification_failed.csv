@@ -1,0 +1,4 @@
+wetland,bin,relative_path,align_dir,classify_dir,status
+S1C2,bin.37,S1C2/bin.37,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/align/S1C2/bin.37,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/classify/S1C2/bin.37,failed
+S1C2,bin.38,S1C2/bin.38,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/align/S1C2/bin.38,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/classify/S1C2/bin.38,failed
+S1C2,bin.39,S1C2/bin.39,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/align/S1C2/bin.39,/home/ubuntu/projects/biodata/DNA-BERT/data/gtdbtk/classify/S1C2/bin.39,failed

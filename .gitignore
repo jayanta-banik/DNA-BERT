@@ -38,6 +38,6 @@ Thumbs.db
 # data folders
 data/raw/
 data/interim/
-
+data/gtdbtk
 
 **/normalized_courses/
